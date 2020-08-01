@@ -1,10 +1,13 @@
-import { promises as fs, read } from 'fs';
+import { promises as fs, read, readdirSync } from 'fs';
+import fsSync from 'fs';
 
 start();
 
 let globalStates = [];
 let globalCities = [];
 let stateCities = [];
+let longestCityArray = [];
+let shortestCityArray = [];
 
 async function start() {
   await readAndWriteStates();
@@ -20,7 +23,9 @@ async function functionsFilter() {
     );
   });
   await filterStatesByNumber();
-  await namesCities();
+  setTimeout(() => {
+    namesCities();
+  }, 100);
 }
 
 async function readAndWriteStates() {
@@ -114,9 +119,62 @@ async function filterStatesByNumber() {
   });
 }
 
-async function namesCities() {
-  let contentFile = '';
+function namesCities() {
+  let longestCitySolo = [];
+  let shortestCitySolo = [];
   try {
+    let dataFiles = readdirSync('./results-states/', 'utf-8');
+    // console.log(dataFiles);
+    dataFiles.forEach((file) => {
+      let nameFile = './results-states/' + file;
+      let dataForEach = JSON.parse(fsSync.readFileSync(nameFile, 'utf-8'));
+      let longestCity = dataForEach.reduce((a, b) => {
+        return a.nomeCidade.length > b.nomeCidade.length ? a : b;
+      });
+      let shortestCity = dataForEach.reduce((a, b) => {
+        return a.nomeCidade.length > b.nomeCidade.length ? b : a;
+      });
+      longestCityArray = [
+        ...longestCityArray,
+        globalStates
+          .filter(({ idEstado, siglaEstado, nomeEstado }) => {
+            return idEstado == longestCity.estadoCidade
+              ? siglaEstado + '-' + longestCity.nomeCidade
+              : '';
+          })
+          .map(({ idEstado, siglaEstado, nomeEstado }) => {
+            return siglaEstado + '-' + longestCity.nomeCidade;
+          }),
+      ];
+      shortestCityArray = [
+        ...shortestCityArray,
+        globalStates
+          .filter(({ idEstado, siglaEstado, nomeEstado }) => {
+            return idEstado == shortestCity.estadoCidade;
+          })
+          .map(({ idEstado, siglaEstado, nomeEstado }) => {
+            return siglaEstado + '-' + shortestCity.nomeCidade;
+          }),
+      ];
+      longestCitySolo = [...longestCitySolo, longestCity];
+      shortestCitySolo = [...shortestCitySolo, shortestCity];
+    });
+    let theLongestCity = longestCitySolo.reduce((a, b) => {
+      return a.nomeCidade.length > b.nomeCidade.length ? a : b;
+    });
+
+    let theShortestCity = shortestCitySolo.reduce((a, b) => {
+      return a.nomeCidade.length > b.nomeCidade.length ? b : a;
+    });
+
+    console.log('\nExercicio 5: Os maiores nomes de cidades de cada Estado:');
+    console.log(longestCityArray);
+    console.log('\nExercicio 6: Os menores nomes de cidades de cada Estado:');
+    console.log(shortestCityArray);
+    console.log('\nExercicio 7: A cidade com maior nome é: ');
+    console.log(theLongestCity.nomeCidade);
+    console.log('\nExercicio 8: A cidade com menor nome é: ');
+    console.log(theShortestCity.nomeCidade);
   } catch (err) {
     console.log(err);
   }

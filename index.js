@@ -9,12 +9,18 @@ let stateCities = [];
 async function start() {
   await readAndWriteStates();
   await readAndWriteCities();
-  functionsFilter();
+  await functionsFilter();
 }
 
-function functionsFilter() {
-  howManyStates('SP');
-  statesWithMoreCities();
+async function functionsFilter() {
+  await howManyStates('SP').then((result) => {
+    console.log(
+      '\n\nExercicio 2: O número de cidades no Estado solicitado é de: ' +
+        result
+    );
+  });
+  await filterStatesByNumber();
+  await namesCities();
 }
 
 async function readAndWriteStates() {
@@ -78,16 +84,40 @@ async function howManyStates(state) {
     let nameJson = './results-states/' + state + '.json';
     let cities = JSON.parse(await fs.readFile(nameJson, 'utf-8'));
     let numberCities = cities.length;
-    console.log(
-      '\n\nExercicio 2: O número de cidades no Estado solicitado é de: ' +
-        numberCities
-    );
+    return numberCities;
   } catch (err) {
     console.log(err);
     console.log(
-      'Estado Não Encontrado, confira novamente a sigla de Estado passada'
+      '\nEstado Não Encontrado, confira novamente a sigla de Estado passada'
     );
   }
 }
 
-async function statesWithMoreCities() {}
+async function filterStatesByNumber() {
+  let promise = globalStates.map((state) => {
+    return howManyStates(state.siglaEstado).then((result) => {
+      return {
+        nome: state.siglaEstado,
+        quantCidades: result,
+      };
+    });
+  });
+
+  Promise.all(promise).then((result) => {
+    result.sort((a, b) => {
+      return b.quantCidades - a.quantCidades;
+    });
+    console.log('\nExercicio 3: Os Estados com mais cidades são:');
+    console.log(result.slice(0, 5));
+    console.log('\nExercicio 4: Os Estados com menos cidades são:');
+    console.log(result.slice(22, 27));
+  });
+}
+
+async function namesCities() {
+  let contentFile = '';
+  try {
+  } catch (err) {
+    console.log(err);
+  }
+}
